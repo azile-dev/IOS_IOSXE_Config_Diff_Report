@@ -16,20 +16,20 @@ pd.options.display.max_rows = None
 ####PART0 - Custom changes. Update before running the script
 
 ##INPUT -> Enter the Date report is generated on
-reportdate="5Jun23"
+reportdate="31Jul23"
 
 ##INPUT -> Enter name for the New sheet for this week in the format shown below
-newsheet='5 Jun 23 to 12 Jun 23 (latest)'
+newsheet='24 Jul 23 to 31 Jul 23 (latest)'
 
 ##INPUT -> Download Raw Inventory from NP. Add Path for downloaded Unzipped RawInventory folder
-basepath = '/Users/azile/Downloads/RawInventory_5Jun23'
+basepath = '/Users/azile/Downloads/RawInventory_31Jul23'
 
 ##INPUT -> Dowload DAV Report from BDB. Enter path for the DAV Report - NP KEY: 179482 Group ID: 473451
 ## BDB link: https://scripts.cisco.com/ui/use/np_dav3
-dav = pd.ExcelFile('/Users/azile/Downloads/179482-DAV-Jun_05_2023.xlsx')
+davpath = '/Users/azile/Downloads/179482-DAV-Jul_31_2023.xlsx'
 
 ##INPUT -> Enter path for Last week's report
-lwpath='/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/IOS_IOSXE_ConfigDiffReport_29May23.xlsx'
+lwpath='/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/IOS_IOSXE_ConfigDiffReport_24Jul23.xlsx'
 
 
 
@@ -41,14 +41,16 @@ lwpath='/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/IOS_
 
 
 
-
+dav = pd.ExcelFile(davpath)
 
 ####PART1 - Collects show command output for IOS/IOSXE devices####
 
 def removecols(nstatus,naccess):
-    if nstatus.startswith("Please") and naccess =="FAIL":
+    if 'Mismatch' in nstatus and naccess =="FAIL":
         nstatus = "Collector Issue - SSH/Telnet Authentication Issue"
     return nstatus
+
+
 def certcheck2(data):
     datalines = data.splitlines()
     if 'No changes were found' in data:
@@ -327,29 +329,29 @@ finallist1 = []
 
 print("PART 1 - Started...",len(newlist)," ")
 
-# cgk=0
-# for i in newlist:
-#     dict = {}
-#     fpath = os.path.join(path, i)  # fpath for devices
-#     dict['switch'] = i
-#     dev_list2 = os.listdir(fpath)
-#     os.system('find . -name ".DS_Store" -delete')
-#     dev_list2 = os.listdir(fpath)
-#
-#     for j in dev_list2:
-#         dpath = os.path.join(fpath, j)  # dpath for txt file
-#         print(cgk, " ", dpath)
-#         cgk=cgk+1
-#         with open(dpath) as f:
-#             sconf = f.read()
-#             if i != "eorwdw-td1n3-1-sw": #eeucrp-hubuvoice02-vg
-#                 dict['detailed_diffs'] = sconf
-#
-#     finallist1.append(dict)
-# df1 = pd.DataFrame(finallist1)
+cgk=0
+for i in newlist:
+    dict = {}
+    fpath = os.path.join(path, i)  # fpath for devices
+    dict['switch'] = i
+    dev_list2 = os.listdir(fpath)
+    os.system('find . -name ".DS_Store" -delete')
+    dev_list2 = os.listdir(fpath)
 
-#df1.to_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df1_'+reportdate+'_temp.csv', index=False)
-df1=pd.read_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df1_'+reportdate+'_temp.csv')
+    for j in dev_list2:
+        dpath = os.path.join(fpath, j)  # dpath for txt file
+        print(cgk, " ", dpath)
+        cgk=cgk+1
+        with open(dpath) as f:
+            sconf = f.read()
+            if i != "eorwdw-td1n3-1-sw": #eeucrp-hubuvoice02-vg
+                dict['detailed_diffs'] = sconf
+
+    finallist1.append(dict)
+df1 = pd.DataFrame(finallist1)
+
+df1.to_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df1_'+reportdate+'_temp.csv', index=False)
+#df1=pd.read_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df1_'+reportdate+'_temp.csv')
 
 pprint(df1.head())
 print(df1.shape,"DF1")
@@ -455,42 +457,42 @@ for item in dir_list2:
 finallist2 = []
 print(len(newlist2),"PART 2 - Started...")
 
-# cgk2=0
-# for i in newlist2:
-#     dict2 = {}
-#     fpath2 = os.path.join(path2, i)  # fpath for devices
-#
-#     dev_list22 = os.listdir(fpath2)
-#     dict2['switch'] = i
-#
-#     os.system('find . -name ".DS_Store" -delete')
-#     for j in dev_list22:
-#         dpath2 = os.path.join(fpath2, j)  # dpath for txt file run/start
-#         print("running", cgk2, " ", dpath2)
-#         with open(dpath2) as f:
-#             sconf2 = f.read()[0:5000]
-#             if 'startup' in dpath2:
-#                 dict2['startup_LastConfigChange'] = sconf2
-#                 dict2['User1'] = sconf2
-#                 dict2['startup_LastNVRAMConfigChange'] = sconf2
-#                 dict2['User2'] = sconf2
-#
-#             if 'running' in dpath2:
-#                 dict2['running_LastConfigChange'] = sconf2
-#                 dict2['User3'] = sconf2
-#                 dict2['running_LastNVRAMConfigChange'] = sconf2
-#                 dict2['User4'] = sconf2
-#         cgk2=cgk2+1
-#     finallist2.append(dict2)
-#
-# df2 = pd.DataFrame(finallist2)
-# df2 = df2.fillna("Not Available")
-# pprint(df2.head())
-#
-# df2.to_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df2_'+reportdate+'_temp.csv', index=False)
+cgk2=0
+for i in newlist2:
+    dict2 = {}
+    fpath2 = os.path.join(path2, i)  # fpath for devices
+
+    dev_list22 = os.listdir(fpath2)
+    dict2['switch'] = i
+
+    os.system('find . -name ".DS_Store" -delete')
+    for j in dev_list22:
+        dpath2 = os.path.join(fpath2, j)  # dpath for txt file run/start
+        print("running", cgk2, " ", dpath2)
+        with open(dpath2) as f:
+            sconf2 = f.read()[0:5000]
+            if 'startup' in dpath2:
+                dict2['startup_LastConfigChange'] = sconf2
+                dict2['User1'] = sconf2
+                dict2['startup_LastNVRAMConfigChange'] = sconf2
+                dict2['User2'] = sconf2
+
+            if 'running' in dpath2:
+                dict2['running_LastConfigChange'] = sconf2
+                dict2['User3'] = sconf2
+                dict2['running_LastNVRAMConfigChange'] = sconf2
+                dict2['User4'] = sconf2
+        cgk2=cgk2+1
+    finallist2.append(dict2)
+
+df2 = pd.DataFrame(finallist2)
+df2 = df2.fillna("Not Available")
+pprint(df2.head())
+
+df2.to_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df2_'+reportdate+'_temp.csv', index=False)
 
 print("Reading df...")
-df2=pd.read_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df2_'+reportdate+'_temp.csv')
+#df2=pd.read_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/df2_'+reportdate+'_temp.csv')
 
 #collect LastConfigChange
 df2['startup_LastConfigChange']=df2['startup_LastConfigChange'].apply(lastconfig)
@@ -631,7 +633,7 @@ dav_thisweek.rename(columns={'deviceName':'device'}, inplace=True)
 
 
 #combined_df=pd.read_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/final_combineddf_'+reportdate+'.csv')
-combined_df_dav = pd.merge(combined_df, dav_thisweek, how="inner", on="device")
+combined_df_dav = pd.merge(combined_df, dav_thisweek, how="left", on="device")
 combined_df_dav['Status'] = np.vectorize(removecols)(combined_df_dav['Status'], combined_df_dav['Access status'])
 combined_df_dav.to_csv('/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/part4_'+reportdate+'.csv', index=False)
 combined_df_dav = combined_df_dav.drop('Access status', axis=1)
@@ -661,7 +663,7 @@ writer.book = book
 
 
 # INPUT -> Enter Name for the new sheet for this week
-combined_df.to_excel(writer, sheet_name = newsheet ,index = False)
+combined_df_dav.to_excel(writer, sheet_name = newsheet ,index = False)
 writer.close()
 
 # INPUT -> Update the last weeks sheet's name
@@ -679,6 +681,7 @@ ss.remove(pfd)
 
 #rename new excel/copy
 ss.save(r'/Users/azile/Library/CloudStorage/OneDrive-Cisco/DISNEY/CONFIG-DIFF/IOS_IOSXE_ConfigDiffReport_'+reportdate+'.xlsx')
+print('IOS_IOSXE_ConfigDiffReport_'+reportdate+'.xlsx')
 print("--------------------------------_END -----------------------")
 print("--------------------------------_END -----------------------")
 
